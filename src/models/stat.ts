@@ -3,7 +3,7 @@ interface Stat {
   gp: number;
   tMoV: number;
   tCS: number;
-  aCS?: number
+  aCS?: number;
   aMoV?: number;
   rank?: number;
   bOT?: number;
