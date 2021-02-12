@@ -1,5 +1,5 @@
 import express from "express";
-import favicon from 'serve-favicon';
+import favicon from "serve-favicon";
 import fs from "fs";
 import csvParser from "csv-parser";
 import { StatService } from "./service/stat-service";
@@ -17,46 +17,35 @@ const port = process.env.PORT || 8080;
 let stats: Stat[] = [];
 let lastGame: string;
 getStats().then((s) => {
-  stats = s
-})
+  stats = s;
+});
 
 app.get("/", async (req, res) => {
-  let scoreDifference;
-  let team1Players: string[] = [];
-  let team2Players: string[] = [];
+  const pickTeamsResult = {};
 
   res.render("home.ejs", {
     stats,
-    team1Players,
-    team2Players,
-    scoreDifference,
-    lastGame
+    pickTeamsResult,
+    lastGame,
   });
 });
 
 app.post("/", async (req, res) => {
-  let scoreDifference;
-  let team1Players: string[] = [];
-  let team2Players: string[] = [];
+  let pickTeamsResult = {};
 
   if (req && req.body) {
-    const players = Object.keys(req.body)
+    const players = Object.keys(req.body);
     console.log(players);
 
     if (players.length) {
-      const pickTeamsResult = StatService.pickTeams(players, stats);
-      team1Players = pickTeamsResult[0];
-      team2Players = pickTeamsResult[1];
-      scoreDifference = pickTeamsResult[2];
+      pickTeamsResult = StatService.pickTeams(players, stats);
     }
   }
 
   res.render("home.ejs", {
     stats,
-    team1Players,
-    team2Players,
-    scoreDifference,
-    lastGame
+    pickTeamsResult,
+    lastGame,
   });
 });
 
@@ -64,11 +53,11 @@ async function getStats(): Promise<Stat[]> {
   let csvFiles: CSVFile[] = [];
 
   const files = fs.readdirSync("stats");
-  lastGame = files[files.length-1].split('.')[0];
+  lastGame = files[files.length - 1].split(".")[0];
 
   for (const fileName of files) {
     const csvStats = await readStatsFromFile(`stats/${fileName}`);
-    csvFiles.push({csvStats});
+    csvFiles.push({ csvStats });
   }
 
   return StatService.calculateStats(csvFiles);

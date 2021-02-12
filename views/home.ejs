@@ -85,10 +85,10 @@
             <tr>
               <th>Team 1</th>
             </tr>
-            <% team1Players.forEach((player)=> { %>
+            <% pickTeamsResult.team1 && pickTeamsResult.team1.forEach((player)=> { %>
               <tr>
                 <td>
-                  <%= player %>
+                  <%= player.name %>
                 </td>
               </tr>
               <% }); %>
@@ -99,10 +99,10 @@
             <tr>
               <th>Team 2</th>
             </tr>
-            <% team2Players.forEach((player)=> { %>
+            <% pickTeamsResult.team2 && pickTeamsResult.team2.forEach((player)=> { %>
               <tr>
                 <td>
-                  <%= player %>
+                  <%= player.name %>
                 </td>
               </tr>
               <% }); %>
@@ -111,7 +111,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <small>Score Difference: <%= scoreDifference %></small>
+      <small>Score Difference: Team <%= pickTeamsResult.strongerTeam %> is +<%= pickTeamsResult.scoreDifference %></small>
       <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
     </div>
   </div>
@@ -126,7 +126,7 @@
       var tooltips = document.querySelectorAll('.tooltipped');
       M.Tooltip.init(tooltips);
 
-      <% if (team1Players && team1Players.length > 0) { %>
+      <% if (pickTeamsResult.team1 && pickTeamsResult.team1.length > 0) { %>
         const pickedTeamsModal = document.getElementById('pickedTeams');
         const instance = M.Modal.init(pickedTeamsModal, {
           dismissible: false

@@ -1,5 +1,5 @@
-import { stat } from "fs";
 import * as Math from "mathjs";
+import PickTeams from "../models/pick-teams";
 
 export class StatService {
   public static calculateStats(csvFiles: CSVFile[]): Stat[] {
@@ -97,11 +97,9 @@ export class StatService {
     return stats;
   }
 
-  public static pickTeams(
-    players: string[],
-    stats: Stat[]
-  ): [string[], string[], number] {
-    const teamPlayers = [];
+  public static pickTeams(players: string[], stats: Stat[]): PickTeams {
+    const pickTeamsResult = new PickTeams();
+    const statPlayers = [];
 
     for (const stat of stats) {
       const teamPlayer = players.find((player) =>
@@ -111,17 +109,16 @@ export class StatService {
       );
 
       if (teamPlayer) {
-        teamPlayers.push(stat.name);
+        statPlayers.push(stat);
       }
     }
 
-    let team1Players = [];
-    let team2Players = [];
+    pickTeamsResult.team1 = [];
+    pickTeamsResult.team2 = [];
 
     let iter = 0;
-    let scoreDifference;
     while (iter < 100) {
-      const tempPlayers = Object.assign([], teamPlayers);
+      const tempPlayers: Stat[] = Object.assign([], statPlayers);
 
       for (let i = tempPlayers.length; i > 0; i--) {
         let randomIndex = Math.floor(Math.random() * i);
@@ -135,32 +132,30 @@ export class StatService {
       let team1TotalBOT = 0;
       let team2TotalBOT = 0;
       for (const teamPlayer of tempPlayers) {
-        if (addToTeam1) {
-          team1TotalBOT += stats.find((stat) => stat.name === teamPlayer).bOT;
-        } else {
-          team2TotalBOT += stats.find((stat) => stat.name === teamPlayer).bOT;
-        }
+        addToTeam1
+          ? (team1TotalBOT += teamPlayer.bOT)
+          : (team2TotalBOT += teamPlayer.bOT);
         addToTeam1 = !addToTeam1;
       }
 
       if (
-        !scoreDifference ||
-        Math.abs(team2TotalBOT - team1TotalBOT) < scoreDifference
+        !pickTeamsResult.scoreDifference ||
+        Math.abs(team2TotalBOT - team1TotalBOT) <
+          pickTeamsResult.scoreDifference
       ) {
-        scoreDifference = Math.round(
+        pickTeamsResult.scoreDifference = Math.round(
           Math.abs(team2TotalBOT - team1TotalBOT),
           2
         );
-        team1Players = [];
-        team2Players = [];
+        pickTeamsResult.strongerTeam = team1TotalBOT > team2TotalBOT ? 1 : 2;
+        pickTeamsResult.team1 = [];
+        pickTeamsResult.team2 = [];
 
         let addToTeam1 = true;
         for (const teamPlayer of tempPlayers) {
-          if (addToTeam1) {
-            team1Players.push(teamPlayer);
-          } else {
-            team2Players.push(teamPlayer);
-          }
+          addToTeam1
+            ? pickTeamsResult.team1.push(teamPlayer)
+            : pickTeamsResult.team2.push(teamPlayer);
           addToTeam1 = !addToTeam1;
         }
       }
@@ -168,7 +163,7 @@ export class StatService {
       iter++;
     }
 
-    return [team1Players, team2Players, scoreDifference];
+    return pickTeamsResult;
   }
 
   private static getDifferenceText(num: number): string {
