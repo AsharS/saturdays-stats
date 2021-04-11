@@ -39,7 +39,8 @@ app.get("/", async (req, res) => {
     stats: latestStats,
     pickTeamsResult,
     lastGame,
-    showAll: false
+    showAll: false,
+    maxGamesBeforeDecay
   });
 });
 
@@ -50,7 +51,8 @@ app.get("/all", async (req, res) => {
     stats: allStats,
     pickTeamsResult,
     lastGame,
-    showAll: true
+    showAll: true,
+    maxGamesBeforeDecay
   });
 });
 
@@ -70,7 +72,8 @@ app.post("/", async (req, res) => {
     stats: latestStats,
     pickTeamsResult,
     lastGame,
-    showAll: false
+    showAll: false,
+    maxGamesBeforeDecay
   });
 });
 

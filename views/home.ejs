@@ -14,7 +14,7 @@
     <h2 class="center">Valorant Rankings <button id="pickTeamsBtn" class="btn modal-trigger" data-target="pickTeams">Pick Teams</button>
     </h2>
     <div class="row valign-wrapper">
-      <div id="showAllText" class="col s6">Showing the last 30 games <a href="all">View All</a></div>
+      <div id="showAllText" class="col s6">Showing the last <%= maxGamesBeforeDecay %> games <a href="all">View All</a></div>
       <div class="col s6 right-align">Last Game: <%= lastGame %></div>
     </div>
     <p>
