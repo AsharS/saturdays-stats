@@ -13,20 +13,44 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const port = process.env.PORT || 8080;
+const maxGamesBeforeDecay = 30;
 
-let stats: Stat[] = [];
+let allStats: Stat[] = [];
+let latestStats: Stat[] = [];
 let lastGame: string;
-getStats().then((s) => {
-  stats = s;
-});
+
+async function init() {
+  let allFiles = fs.readdirSync("stats");
+  let latestFiles = allFiles.concat();
+  if (latestFiles.length > maxGamesBeforeDecay) {
+    latestFiles = latestFiles.slice(latestFiles.length - maxGamesBeforeDecay, latestFiles.length);
+  }
+  lastGame = allFiles[allFiles.length - 1].split(".")[0];
+
+  allStats = await getStats(allFiles);
+  latestStats = await getStats(latestFiles);
+}
+init();
 
 app.get("/", async (req, res) => {
   const pickTeamsResult = {};
 
   res.render("home.ejs", {
-    stats,
+    stats: latestStats,
     pickTeamsResult,
     lastGame,
+    showAll: false
+  });
+});
+
+app.get("/all", async (req, res) => {
+  const pickTeamsResult = {};
+
+  res.render("home.ejs", {
+    stats: allStats,
+    pickTeamsResult,
+    lastGame,
+    showAll: true
   });
 });
 
@@ -38,24 +62,22 @@ app.post("/", async (req, res) => {
     console.log(players);
 
     if (players.length) {
-      pickTeamsResult = StatService.pickTeams(players, stats);
+      pickTeamsResult = StatService.pickTeams(players, latestStats);
     }
   }
 
   res.render("home.ejs", {
-    stats,
+    stats: latestStats,
     pickTeamsResult,
     lastGame,
+    showAll: false
   });
 });
 
-async function getStats(): Promise<Stat[]> {
+async function getStats(fileNames: string[]): Promise<Stat[]> {
   let csvFiles: CSVFile[] = [];
 
-  const files = fs.readdirSync("stats");
-  lastGame = files[files.length - 1].split(".")[0];
-
-  for (const fileName of files) {
+  for (const fileName of fileNames) {
     const csvStats = await readStatsFromFile(`stats/${fileName}`);
     csvFiles.push({ csvStats });
   }
