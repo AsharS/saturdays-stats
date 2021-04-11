@@ -16,7 +16,7 @@
     "csv-parser": "^3.0.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "mathjs": "^9.1.0",
+    "mathjs": "9.1.0",
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
