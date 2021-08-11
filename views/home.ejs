@@ -33,7 +33,7 @@
               <%= stat.name %>
             </td>
             <td>
-              <%= stat.currenttierpatched %> <% if (stat.currenttier) { %><small>(<%= stat.currenttier %>/100)</small><% } %>
+              <%= stat.currenttierpatched %> <% if (stat.currenttier) { %><small>(<%= stat.ranking_in_tier %>/100)</small><% } %>
             </td>
             <td>
               <%= stat.elo %><% if (stat.mmr_difference_text) { %> <small><%- stat.mmr_difference_text %></small><% } %>
