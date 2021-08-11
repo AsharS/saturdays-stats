@@ -1,96 +1,50 @@
-import * as Math from "mathjs";
-import PickTeams from "../models/pick-teams";
+import axios from 'axios';
+import * as Math from 'mathjs';
+import PickTeams from '../models/pick-teams';
 
 export class StatService {
-  public static calculateStats(csvFiles: CSVFile[]): Stat[] {
+  public static async calculateStats(players: Player[]): Promise<Stat[]> {
     const stats: Stat[] = [];
-    let upToLastGameStats: Stat[] = [];
 
-    // Parse csv-stat to stat
-    for (let i = 0; i < csvFiles.length; i++) {
-      for (const csvStat of csvFiles[i].csvStats) {
-        const existingStat = stats.find((stat) => stat.name === csvStat.Name);
+    // Retrieve player data from API
+    for (const player of players) {
+      console.log(`Retrieving data for ${player.name}#${player.tag}`);
 
-        if (existingStat) {
-          existingStat.gp = existingStat.gp + 1;
-          existingStat.tMoV = Math.evaluate(
-            `${existingStat.tMoV} + ${csvStat.RD}`
-          );
-          existingStat.tCS = Math.evaluate(
-            `${existingStat.tCS} + ${csvStat.CS}`
-          );
-        } else {
-          const newStat: Stat = {
-            name: csvStat.Name,
-            gp: 1,
-            tMoV: Number(csvStat.RD),
-            tCS: Number(csvStat.CS),
-          };
-          stats.push(newStat);
-        }
-      }
-
-      // Save a snapshot of all games minus the last game
-      if (i > 0 && i === csvFiles.length - 2) {
-        upToLastGameStats = [];
-        stats.forEach((stat) =>
-          upToLastGameStats.push(Object.assign({}, stat))
+      try {
+        const response = await axios.get(
+          `https://api.henrikdev.xyz/valorant/v1/mmr/na/${player.name}/${player.tag}`
         );
+
+        if (response.data && response.data.data) {
+          const playerData: Stat = response.data.data;
+          playerData.mmr_difference_text = this.getDifferenceText(
+            playerData.mmr_change_to_last_game
+          );
+
+          stats.push(playerData);
+        } else {
+          throw response;
+        }
+      } catch (e) {
+        console.error(`No data found for ${player.name}#${player.tag}`);
+
+        const playerData: Stat = {
+          name: player.name,
+          tag: player.tag,
+          elo: 0
+        };
+
+        stats.push(playerData);
       }
     }
 
-    // Calculate AMoV, ACS, and BOT
-    for (const stat of stats) {
-      stat.aMoV = Math.round(stat.tMoV / stat.gp, 2);
-      stat.aCS = Math.round(stat.tCS / stat.gp, 2);
-      stat.bOT = Math.round((stat.aCS * (13 + stat.aMoV)) / 10, 2);
-    }
-
-    // Sort by BOT and set ranking
-    stats.sort((a, b) => b.bOT - a.bOT);
+    // Sort by elo
+    stats.sort((a, b) => b.elo - a.elo);
     for (let i = 0; i < stats.length; i++) {
-      if (i > 0 && stats[i - 1].bOT === stats[i].bOT) {
+      if (i > 0 && stats[i - 1].elo === stats[i].elo) {
         stats[i].rank = stats[i - 1].rank;
       } else {
         stats[i].rank = i + 1;
-      }
-    }
-
-    // Do the same for the snapshot
-    for (const stat of upToLastGameStats) {
-      stat.aMoV = Math.round(stat.tMoV / stat.gp, 2);
-      stat.aCS = Math.round(stat.tCS / stat.gp, 2);
-      stat.bOT = Math.round((stat.aCS * (13 + stat.aMoV)) / 10, 2);
-    }
-    upToLastGameStats.sort((a, b) => b.bOT - a.bOT);
-    for (let i = 0; i < upToLastGameStats.length; i++) {
-      if (i > 0 && upToLastGameStats[i - 1].bOT === upToLastGameStats[i].bOT) {
-        upToLastGameStats[i].rank = upToLastGameStats[i - 1].rank;
-      } else {
-        upToLastGameStats[i].rank = i + 1;
-      }
-    }
-
-    // Calculate stat difference and set text
-    for (const stat of stats) {
-      const upToLastGameStat = upToLastGameStats.find(
-        (x) => x.name === stat.name
-      );
-
-      if (upToLastGameStat && upToLastGameStat.gp !== stat.gp) {
-        stat.difference = {
-          gp: Math.round(stat.gp - upToLastGameStat.gp, 2),
-          aMoV: Math.round(stat.aMoV - upToLastGameStat.aMoV, 2),
-          aCS: Math.round(stat.aCS - upToLastGameStat.aCS, 2),
-          bOT: Math.round(stat.bOT - upToLastGameStat.bOT, 2),
-          rank: Math.round(upToLastGameStat.rank - stat.rank, 2),
-        };
-
-        stat.difference.gpText = this.getDifferenceText(stat.difference.gp);
-        stat.difference.aMoVText = this.getDifferenceText(stat.difference.aMoV);
-        stat.difference.aCSText = this.getDifferenceText(stat.difference.aCS);
-        stat.difference.bOTText = this.getDifferenceText(stat.difference.bOT);
-        stat.difference.rankText = this.getDifferenceText(stat.difference.rank);
       }
     }
 
@@ -129,25 +83,25 @@ export class StatService {
       }
 
       let addToTeam1 = true;
-      let team1TotalBOT = 0;
-      let team2TotalBOT = 0;
+      let team1TotalElo = 0;
+      let team2TotalElo = 0;
       for (const teamPlayer of tempPlayers) {
         addToTeam1
-          ? (team1TotalBOT += teamPlayer.bOT)
-          : (team2TotalBOT += teamPlayer.bOT);
+          ? (team1TotalElo += teamPlayer.elo)
+          : (team2TotalElo += teamPlayer.elo);
         addToTeam1 = !addToTeam1;
       }
 
       if (
         !pickTeamsResult.scoreDifference ||
-        Math.abs(team2TotalBOT - team1TotalBOT) <
+        Math.abs(team2TotalElo - team1TotalElo) <
           pickTeamsResult.scoreDifference
       ) {
         pickTeamsResult.scoreDifference = Math.round(
-          Math.abs(team2TotalBOT - team1TotalBOT),
+          Math.abs(team2TotalElo - team1TotalElo),
           2
         );
-        pickTeamsResult.strongerTeam = team1TotalBOT > team2TotalBOT ? 1 : 2;
+        pickTeamsResult.strongerTeam = team1TotalElo > team2TotalElo ? 1 : 2;
         pickTeamsResult.team1 = [];
         pickTeamsResult.team2 = [];
 
@@ -168,11 +122,11 @@ export class StatService {
 
   private static getDifferenceText(num: number): string {
     if (num === 0) {
-      return "";
+      return null;
     } else if (num > 0) {
-      return '<span class="green-text">&#8593;' + Math.abs(num) + "</span>";
+      return '<span class="green-text">&#8593;' + Math.abs(num) + '</span>';
     } else {
-      return '<span class="red-text">&#8595;' + Math.abs(num) + "</span>";
+      return '<span class="red-text">&#8595;' + Math.abs(num) + '</span>';
     }
   }
 }

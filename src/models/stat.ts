@@ -1,26 +1,12 @@
 interface Stat {
   name: string;
-  gp: number;
-  tMoV: number;
-  tCS: number;
-  aMoV?: number;
-  aCS?: number;
-  bOT?: number;
+  tag: string;
+  elo: number;
+
+  currenttier?: number;
+  currenttierpatched?: string;
+  mmr_change_to_last_game?: number;
+  mmr_difference_text?: string;
   rank?: number;
-
-  difference?: StatDifference
-}
-
-interface StatDifference {
-  gp: number;
-  aMoV: number;
-  aCS: number;
-  bOT: number;
-  rank: number;
-
-  gpText?: string;
-  aMoVText?: string;
-  aCSText?: string;
-  bOTText?: string;
-  rankText?: string;
+  ranking_in_tier?: number;
 }
