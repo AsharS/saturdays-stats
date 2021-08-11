@@ -11,46 +11,36 @@
 
 <body>
   <div class="container">
-    <h2 class="center">Valorant Rankings <button id="pickTeamsBtn" class="btn modal-trigger" data-target="pickTeams">Pick Teams</button>
-    </h2>
+    <h2 class="center">Saturdays Rankings <button id="pickTeamsBtn" class="btn modal-trigger" data-target="pickTeams">Pick Teams</button></h2>
     <div class="row valign-wrapper">
-      <div id="showAllText" class="col s6">Showing the last <%= maxGamesBeforeDecay %> games <a href="all">View All</a></div>
-      <div class="col s6 right-align">Last Game: <%= lastGame %></div>
+      <div id="lastUpdated" class="col s12 right-align"></div>
     </div>
     <p>
-    <table class="striped">
-      <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Games Played</th>
-        <th>Average MoV</th>
-        <th>Average CS</th>
-        <th class="tooltipped" data-position="top" data-tooltip="(ACS * (13 + AMoV)) / 10">BOT</th>
-      </tr>
-
-      <% stats.forEach((stat)=> { %>
+      <table class="striped">
         <tr>
-          <td>
-            <%= stat.rank %><% if (stat.difference) { %> <small><%- stat.difference.rankText %></small><% } %>
-          </td>
-          <td>
-            <%= stat.name %>
-          </td>
-          <td>
-            <%= stat.gp %><% if (stat.difference) { %> <small><%- stat.difference.gpText %></small><% } %>
-          </td>
-          <td>
-            <%= stat.aMoV %><% if (stat.difference) { %> <small><%- stat.difference.aMoVText %></small><% } %>
-          </td>
-          <td>
-            <%= stat.aCS %><% if (stat.difference) { %> <small><%- stat.difference.aCSText %></small><% } %>
-          </td>
-          <td>
-            <%= stat.bOT %><% if (stat.difference) { %> <small><%- stat.difference.bOTText %></small><% } %>
-          </td>
+          <th>#</th>
+          <th>Name</th>
+          <th>Rank</th>
+          <th>MMR</th>
         </tr>
-        <% }); %>
-    </table>
+
+        <% stats.forEach((stat)=> { %>
+          <tr>
+            <td>
+              <%= stat.rank %><% if (stat.difference) { %> <small><%- stat.difference.rankText %></small><% } %>
+            </td>
+            <td>
+              <%= stat.name %>
+            </td>
+            <td>
+              <%= stat.currenttierpatched %> <% if (stat.currenttier) { %><small>(<%= stat.currenttier %>/100)</small><% } %>
+            </td>
+            <td>
+              <%= stat.elo %><% if (stat.mmr_difference_text) { %> <small><%- stat.mmr_difference_text %></small><% } %>
+            </td>
+          </tr>
+          <% }); %>
+      </table>
     </p>
   </div>
 
@@ -114,7 +104,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <small>Score Difference: Team <%= pickTeamsResult.strongerTeam %> is +<%= pickTeamsResult.scoreDifference %></small>
+      <small>MMR Difference: Team <%= pickTeamsResult.strongerTeam %> is +<%= pickTeamsResult.scoreDifference %></small>
       <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
     </div>
   </div>
@@ -123,6 +113,9 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      var lastUpdatedString = "Last Updated: " + Math.ceil(Math.abs(new Date() - new Date(<%= lastUpdated %>)) / 1000 / 60) + " minutes ago";
+      document.getElementById('lastUpdated').innerText = lastUpdatedString;
+
       var modals = document.querySelectorAll('.modal');
       M.Modal.init(modals);
 
@@ -135,11 +128,6 @@
           dismissible: false
         });
         instance.open();
-      <% } %>
-
-      <% if (showAll) { %>
-        document.getElementById('pickTeamsBtn').disabled = true;
-        document.getElementById('showAllText').innerHTML = 'Showing all games <a href="/">Go Back</a>';
       <% } %>
     });
   </script>

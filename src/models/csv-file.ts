@@ -1,3 +1,0 @@
-interface CSVFile {
-  csvStats: CSVStat[]
-}
