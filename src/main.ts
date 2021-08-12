@@ -21,7 +21,10 @@ let lastUpdated = new Date().getTime();
 async function init() {
   let allPlayers = await readStatsFromFile('data/players.csv');
 
-  stats = await StatService.calculateStats(allPlayers);
+  const newStats = await StatService.calculateStats(allPlayers);
+
+  console.log('Updated stats...');
+  stats = newStats;
   lastUpdated = new Date().getTime();
 }
 init();
