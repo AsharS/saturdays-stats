@@ -38,15 +38,7 @@ export class StatService {
       }
     }
 
-    // Sort by elo
-    stats.sort((a, b) => b.elo - a.elo);
-    for (let i = 0; i < stats.length; i++) {
-      if (i > 0 && stats[i - 1].elo === stats[i].elo) {
-        stats[i].rank = stats[i - 1].rank;
-      } else {
-        stats[i].rank = i + 1;
-      }
-    }
+    this.sortStats(stats);
 
     return stats;
   }
@@ -118,6 +110,18 @@ export class StatService {
     }
 
     return pickTeamsResult;
+  }
+
+  public static sortStats(stats: Stat[]) {
+    // Sort by elo
+    stats.sort((a, b) => b.elo - a.elo);
+    for (let i = 0; i < stats.length; i++) {
+      if (i > 0 && stats[i - 1].elo === stats[i].elo) {
+        stats[i].rank = stats[i - 1].rank;
+      } else {
+        stats[i].rank = i + 1;
+      }
+    }
   }
 
   private static getDifferenceText(num: number): string {
