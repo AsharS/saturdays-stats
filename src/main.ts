@@ -106,10 +106,6 @@ app.post('/', async (req, res) => {
   });
 });
 
-app.get('/_ah/warmup', async (req, res) => {
-  init();
-});
-
 async function readStatsFromFile(filePath: string): Promise<Player[]> {
   const players: Player[] = [];
 
