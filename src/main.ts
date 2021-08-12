@@ -14,10 +14,8 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 const port = process.env.PORT || 8080;
-const maxGamesBeforeDecay = 30;
 
 let stats: Stat[] = [];
-let lastGame: string;
 let lastUpdated = new Date().getTime();
 
 async function init() {
@@ -34,11 +32,9 @@ nodeCron.schedule('*/15 * * * *', async () => {
 });
 
 app.get('/', async (req, res) => {
-  const pickTeamsResult = {};
-
   res.render('home.ejs', {
-    stats: stats,
-    pickTeamsResult,
+    stats,
+    pickTeamsResult: {},
     lastUpdated
   });
 });
@@ -56,7 +52,7 @@ app.post('/', async (req, res) => {
   }
 
   res.render('home.ejs', {
-    stats: stats,
+    stats,
     pickTeamsResult,
     lastUpdated
   });
