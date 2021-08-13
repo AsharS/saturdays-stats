@@ -28,6 +28,41 @@ let allPlayers: Player[];
 let stats: Stat[] = [];
 let lastUpdated = new Date().getTime();
 
+const initData = async function (req: any, res: any, next: () => void) {
+  if (!allPlayers) {
+    await init();
+  }
+  next();
+};
+app.use(initData);
+
+app.get('/', async (req, res) => {
+  res.render('home.ejs', {
+    stats,
+    pickTeamsResult: {},
+    lastUpdated
+  });
+});
+
+app.post('/', async (req, res) => {
+  let pickTeamsResult = {};
+
+  if (req && req.body) {
+    const players = Object.keys(req.body);
+    console.log(players);
+
+    if (players.length) {
+      pickTeamsResult = StatService.pickTeams(players, stats);
+    }
+  }
+
+  res.render('home.ejs', {
+    stats,
+    pickTeamsResult,
+    lastUpdated
+  });
+});
+
 async function init() {
   allPlayers = await readStatsFromFile('data/players.csv');
 
@@ -56,7 +91,6 @@ async function init() {
 
   updateStats();
 }
-init();
 
 async function updateStats() {
   const newStats = await StatService.calculateStats(allPlayers);
@@ -77,33 +111,6 @@ async function updateStats() {
 console.log('Starting cron job...');
 nodeCron.schedule('*/15 * * * *', async () => {
   updateStats();
-});
-
-app.get('/', async (req, res) => {
-  res.render('home.ejs', {
-    stats,
-    pickTeamsResult: {},
-    lastUpdated
-  });
-});
-
-app.post('/', async (req, res) => {
-  let pickTeamsResult = {};
-
-  if (req && req.body) {
-    const players = Object.keys(req.body);
-    console.log(players);
-
-    if (players.length) {
-      pickTeamsResult = StatService.pickTeams(players, stats);
-    }
-  }
-
-  res.render('home.ejs', {
-    stats,
-    pickTeamsResult,
-    lastUpdated
-  });
 });
 
 async function readStatsFromFile(filePath: string): Promise<Player[]> {
