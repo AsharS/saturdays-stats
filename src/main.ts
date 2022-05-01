@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { Firestore } from '@google-cloud/firestore';
-import favicon from 'serve-favicon';
 import fs from 'fs';
 import csvParser from 'csv-parser';
 import { StatService } from './service/stat-service';
@@ -12,7 +11,6 @@ dotenv.config();
 
 const app = express();
 app.use('/public', express.static('public'));
-app.use(favicon('public/favicon.ico'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', 'views');

@@ -21,8 +21,7 @@
     "express": "^4.17.1",
     "mathjs": "9.1.0",
     "node-cron": "^3.0.0",
-    "prettier": "^2.3.2",
-    "serve-favicon": "^2.5.0"
+    "prettier": "^2.3.2"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
