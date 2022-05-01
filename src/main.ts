@@ -73,15 +73,15 @@ async function init() {
 
     // add stat only if player is found, otherwise delete stat
     const playerMatch = allPlayers.find(
-      (player) => player.name === stat.name && player.tag === stat.tag
+      (player) => player.id === stat.id
     );
     if (playerMatch) {
       oldStats.push(stat);
     } else {
-      console.warn(`Player not found, deleting: ${stat.name}#${stat.tag}`);
+      console.warn(`Player not found, deleting: ${stat.name} (${stat.id})`);
       await db
         .collection('stats')
-        .doc(stat.name + '#' + stat.tag)
+        .doc(doc.id)
         .delete();
     }
   });
@@ -101,7 +101,7 @@ async function updateStats() {
   stats.forEach(async (stat) => {
     await db
       .collection('stats')
-      .doc(stat.name + '#' + stat.tag)
+      .doc(stat.id)
       .set(stat, { merge: true });
   });
 

@@ -8,15 +8,17 @@ export class StatService {
 
     // Retrieve player data from API
     for (const player of players) {
-      console.log(`Retrieving data for ${player.name}#${player.tag}`);
+      console.log(`Retrieving data for ${player.name} (${player.id})`);
 
       try {
         const response = await axios.get(
-          `https://api.henrikdev.xyz/valorant/v1/mmr/na/${player.name}/${player.tag}`
+          `https://api.henrikdev.xyz/valorant/v1/by-puuid/mmr/na/${player.id}`
         );
 
         if (response.data && response.data.data) {
-          const playerData: Stat = response.data.data;
+          const playerDataResponse: StatResponse = response.data.data;
+          const playerData: Stat = { id: player.id, ...playerDataResponse };
+
           playerData.mmr_difference_text = this.getDifferenceText(
             playerData.mmr_change_to_last_game
           );
@@ -26,15 +28,7 @@ export class StatService {
           throw response;
         }
       } catch (e) {
-        console.error(`No data found for ${player.name}#${player.tag}`);
-
-        const playerData: Stat = {
-          name: player.name,
-          tag: player.tag,
-          elo: 0
-        };
-
-        stats.push(playerData);
+        console.error(`No data found for ${player.name} (${player.id})`);
       }
     }
 
