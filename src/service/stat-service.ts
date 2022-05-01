@@ -17,7 +17,11 @@ export class StatService {
 
         if (response.data && response.data.data) {
           const playerDataResponse: StatResponse = response.data.data;
-          const playerData: Stat = { id: player.id, ...playerDataResponse };
+          const playerData: Stat = {
+            ...playerDataResponse,
+            id: player.id,
+            name: player.name
+          };
 
           playerData.mmr_difference_text = this.getDifferenceText(
             playerData.mmr_change_to_last_game
