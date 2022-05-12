@@ -93,6 +93,13 @@ async function init() {
 async function updateStats() {
   const newStats = await StatService.calculateStats(allPlayers);
 
+  for (const oldStat of stats) {
+    if (!newStats.find(newStat => newStat.name === oldStat.name)) {
+      newStats.push(oldStat);
+    }
+  }
+  StatService.sortStats(newStats);
+
   stats = newStats;
   lastUpdated = new Date().getTime();
 
