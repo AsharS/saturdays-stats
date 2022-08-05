@@ -5,7 +5,6 @@ node_modules/
 !**/.vscode/settings.template.json
 !**/.vscode/launch.template.json
 !**/.vscode/extensions.json
-package-lock.json
 
 dist/
 .env

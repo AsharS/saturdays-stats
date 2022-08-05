@@ -32,7 +32,7 @@ export class StatService {
           throw response;
         }
       } catch (e) {
-        console.error(`No data found for ${player.name} (${player.id})`, e.toJSON());
+        console.error(`No data found for ${player.name} (${player.id})`, e);
       }
     }
 
