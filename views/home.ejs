@@ -24,21 +24,25 @@
           <th>Name</th>
           <th>Rank</th>
           <th>MMR</th>
+          <th>Last Game</th>
         </tr>
 
         <% stats.forEach((stat)=> { %>
           <tr>
             <td>
-              <%= stat.rank %><% if (stat.difference) { %> <small><%- stat.difference.rankText %></small><% } %>
+              <%= stat.rank %>
             </td>
             <td>
               <%= stat.name %>
             </td>
             <td>
-              <%= stat.currenttierpatched %> <% if (stat.currenttier) { %><small>(<%= stat.ranking_in_tier %>/100)</small><% } %>
+              <%= stat.last_data.currenttierpatched %> <% if (stat.last_data.currenttier) { %><small>(<%= stat.last_data.ranking_in_tier %>/100)</small><% } %>
             </td>
             <td>
-              <%= stat.elo %><% if (stat.mmr_difference_text) { %> <small><%- stat.mmr_difference_text %></small><% } %>
+              <%= stat.last_data.elo %>
+            </td>
+            <td>
+              <%= stat.last_data.map.name %> <small>(<%= stat.last_data.formatted_date %>) <% if (stat.mmr_difference_text) { %><%- stat.mmr_difference_text %><% } %></small>
             </td>
           </tr>
         <% }); %>

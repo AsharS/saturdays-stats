@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as Math from 'mathjs';
 import PickTeams from '../models/pick-teams';
+import moment from 'moment';
 
 export class StatService {
   public static async calculateStats(players: Player[]): Promise<Stat[]> {
@@ -12,19 +13,20 @@ export class StatService {
 
       try {
         const response = await axios.get(
-          `https://api.henrikdev.xyz/valorant/v1/by-puuid/mmr/na/${player.id}`
+          `https://api.henrikdev.xyz/valorant/v1/by-puuid/mmr-history/na/${player.id}`
         );
 
-        if (response.data && response.data.data) {
-          const playerDataResponse: StatResponse = response.data.data;
+        if (response.status === 200 && response.data) {
+          const playerDataResponse: StatResponse = response.data;
           const playerData: Stat = {
             ...playerDataResponse,
             id: player.id,
-            name: player.name
+            last_data: playerDataResponse.data[0]
           };
+          playerData.last_data.formatted_date = moment.unix(playerData.last_data.date_raw).format('L');
 
           playerData.mmr_difference_text = this.getDifferenceText(
-            playerData.mmr_change_to_last_game
+            playerData.data[0].mmr_change_to_last_game
           );
 
           stats.push(playerData);
@@ -32,7 +34,7 @@ export class StatService {
           throw response;
         }
       } catch (e) {
-        console.error(`No data found for ${player.name} (${player.id})`, e);
+        console.error(`Error for ${player.name} (${player.id})`, e);
       }
     }
 
@@ -77,8 +79,8 @@ export class StatService {
       let team2TotalElo = 0;
       for (const teamPlayer of tempPlayers) {
         addToTeam1
-          ? (team1TotalElo += teamPlayer.elo)
-          : (team2TotalElo += teamPlayer.elo);
+          ? (team1TotalElo += teamPlayer.last_data.elo)
+          : (team2TotalElo += teamPlayer.last_data.elo);
         addToTeam1 = !addToTeam1;
       }
 
@@ -112,9 +114,9 @@ export class StatService {
 
   public static sortStats(stats: Stat[]) {
     // Sort by elo
-    stats.sort((a, b) => b.elo - a.elo);
+    stats.sort((a, b) => b.last_data.elo - a.last_data.elo);
     for (let i = 0; i < stats.length; i++) {
-      if (i > 0 && stats[i - 1].elo === stats[i].elo) {
+      if (i > 0 && stats[i - 1].last_data.elo === stats[i].last_data.elo) {
         stats[i].rank = stats[i - 1].rank;
       } else {
         stats[i].rank = i + 1;

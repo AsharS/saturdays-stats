@@ -94,7 +94,7 @@ async function updateStats() {
   const newStats = await StatService.calculateStats(allPlayers);
 
   for (const oldStat of stats) {
-    if (!newStats.find(newStat => newStat.name === oldStat.name)) {
+    if (!newStats.find(newStat => newStat.id === oldStat.id)) {
       newStats.push(oldStat);
     }
   }
