@@ -3,6 +3,11 @@ steps:
   entrypoint: npm
   args: ['install']
 - name: node
+  entrypoint: yarn
+  args: ["run", "create-env"]
+  env:
+    - 'VALORANT_API_KEY=${_VALORANT_API_KEY}'
+- name: node
   entrypoint: npm
   args: ['run', 'build']
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

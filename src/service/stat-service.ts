@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as Math from 'mathjs';
-import PickTeams from '../models/pick-teams';
 import moment from 'moment';
+import PickTeams from '../models/pick-teams';
 
 export class StatService {
   public static async calculateStats(players: Player[]): Promise<Stat[]> {
@@ -13,7 +13,12 @@ export class StatService {
 
       try {
         const response = await axios.get(
-          `https://api.henrikdev.xyz/valorant/v1/by-puuid/mmr-history/na/${player.id}`
+          `https://api.henrikdev.xyz/valorant/v1/by-puuid/mmr-history/na/${player.id}`,
+          {
+            headers: {
+              Authorization: process.env.VALORANT_API_KEY
+            }
+          }
         );
 
         if (response.status === 200 && response.data) {
@@ -23,7 +28,9 @@ export class StatService {
             id: player.id,
             last_data: playerDataResponse.data[0]
           };
-          playerData.last_data.formatted_date = moment.unix(playerData.last_data.date_raw).format('L');
+          playerData.last_data.formatted_date = moment
+            .unix(playerData.last_data.date_raw)
+            .format('L');
 
           playerData.mmr_difference_text = this.getDifferenceText(
             playerData.data[0].mmr_change_to_last_game

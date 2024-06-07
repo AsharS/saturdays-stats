@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc-watch --onSuccess \"node dist/main.js\"",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "create-env": "printenv > .env"
   },
   "keywords": [],
   "author": "",
