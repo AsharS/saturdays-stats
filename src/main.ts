@@ -74,6 +74,9 @@ async function init() {
       (player) => player.id === stat.id
     );
     if (playerMatch) {
+      if (!stat.name) {
+        stat.name = playerMatch.name;
+      }
       oldStats.push(stat);
     } else {
       console.warn(`Player not found, deleting: ${stat.name} (${stat.id})`);

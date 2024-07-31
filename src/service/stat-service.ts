@@ -26,6 +26,7 @@ export class StatService {
           const playerData: Stat = {
             ...playerDataResponse,
             id: player.id,
+            name: playerDataResponse.name ?? player.name,
             last_data: playerDataResponse.data[0]
           };
           playerData.last_data.formatted_date = moment
