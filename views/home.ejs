@@ -23,41 +23,85 @@
     <div class="row valign-wrapper">
       <div id="lastUpdated" class="col s12 right-align"></div>
     </div>
-    <p>
-      <table class="highlight">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Rank</th>
-            <th>MMR</th>
-            <th>Last Game</th>
-          </tr>
-        </thead>
+    <div class="card">
+      <div class="card-content">
+        <p>
+          <table class="highlight">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Rank</th>
+                <th>MMR</th>
+                <th>Last Game</th>
+              </tr>
+            </thead>
 
-        <tbody>
-          <% stats.forEach((stat)=> { %>
-            <tr>
-              <td>
-                <%= stat.rank %>
-              </td>
-              <td>
-                <%= stat.name %>
-              </td>
-              <td>
-                <%= stat.last_data.currenttierpatched %> <% if (stat.last_data.currenttier) { %><small>(<%= stat.last_data.ranking_in_tier %>/100)</small><% } %>
-              </td>
-              <td>
-                <%= stat.last_data.elo %>
-              </td>
-              <td>
-                <%= stat.last_data.map.name %> <small>(<%= stat.last_data.formatted_date %>) <% if (stat.mmr_difference_text) { %><%- stat.mmr_difference_text %><% } %></small>
-              </td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    </p>
+            <tbody>
+              <% activeStats.forEach((stat)=> { %>
+                <tr>
+                  <td>
+                    <%= stat.rank %>
+                  </td>
+                  <td>
+                    <%= stat.name %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.currenttierpatched %> <% if (stat.last_data.currenttier) { %><small>(<%= stat.last_data.ranking_in_tier %>/100)</small><% } %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.elo %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.map.name %> <small>(<%= stat.last_data.formatted_date %>) <% if (stat.mmr_difference_text) { %><%- stat.mmr_difference_text %><% } %></small>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-content">
+        <div class="card-title center-align"><h5>Inactive</h5></div>
+        <p>
+          <table class="highlight">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Last Rank</th>
+                <th>Last MMR</th>
+                <th>Last Game</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% inactiveStats.forEach((stat)=> { %>
+                <tr>
+                  <td>
+                    <%= stat.rank %>
+                  </td>
+                  <td>
+                    <%= stat.name %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.currenttierpatched %> <% if (stat.last_data.currenttier) { %><small>(<%= stat.last_data.ranking_in_tier %>/100)</small><% } %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.elo %>
+                  </td>
+                  <td>
+                    <%= stat.last_data.map.name %> <small>(<%= stat.last_data.formatted_date %>) <% if (stat.mmr_difference_text) { %><%- stat.mmr_difference_text %><% } %></small>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </p>
+      </div>
+    </div>
   </div>
 
   <div id="pickTeams" class="modal">

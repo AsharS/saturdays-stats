@@ -46,8 +46,6 @@ export class StatService {
       }
     }
 
-    this.sortStats(stats);
-
     return stats;
   }
 

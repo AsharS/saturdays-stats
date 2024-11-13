@@ -6,6 +6,7 @@ import csvParser from 'csv-parser';
 import { StatService } from './service/stat-service';
 import bodyParser from 'body-parser';
 import nodeCron from 'node-cron';
+import moment from 'moment';
 
 dotenv.config();
 
@@ -16,14 +17,16 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 const port = process.env.PORT || 8080;
-
 const db = new Firestore({
   projectId: process.env.PROJECT_ID,
   keyFilename: process.env.KEY_FILENAME
 });
+const inactiveThresholdDays = 90;
 
 let allPlayers: Player[];
 let stats: Stat[] = [];
+let activeStats: Stat[] = [];
+let inactiveStats: Stat[] = [];
 let lastUpdated = new Date().getTime();
 
 const initData = async function (req: any, res: any, next: () => void) {
@@ -37,6 +40,8 @@ app.use(initData);
 app.get('/', async (req, res) => {
   res.render('home.ejs', {
     stats,
+    activeStats,
+    inactiveStats,
     pickTeamsResult: {},
     lastUpdated
   });
@@ -56,6 +61,8 @@ app.post('/', async (req, res) => {
 
   res.render('home.ejs', {
     stats,
+    activeStats,
+    inactiveStats,
     pickTeamsResult,
     lastUpdated
   });
@@ -70,9 +77,7 @@ async function init() {
     const stat = doc.data() as Stat;
 
     // add stat only if player is found, otherwise delete stat
-    const playerMatch = allPlayers.find(
-      (player) => player.id === stat.id
-    );
+    const playerMatch = allPlayers.find((player) => player.id === stat.id);
     if (playerMatch) {
       if (!stat.name) {
         stat.name = playerMatch.name;
@@ -80,37 +85,55 @@ async function init() {
       oldStats.push(stat);
     } else {
       console.warn(`Player not found, deleting: ${stat.name} (${stat.id})`);
-      await db
-        .collection('stats')
-        .doc(doc.id)
-        .delete();
+      await db.collection('stats').doc(doc.id).delete();
     }
   });
 
-  StatService.sortStats(oldStats);
   stats = oldStats;
+  activeStats = [];
+  inactiveStats = [];
 
-  updateStats();
+  for (const stat of stats) {
+    if (moment().diff(moment.unix(stat.last_data.date_raw), 'days') <= inactiveThresholdDays) {
+      activeStats.push(stat);
+    } else {
+      inactiveStats.push(stat);
+    }
+  }
+
+  StatService.sortStats(activeStats);
+  StatService.sortStats(inactiveStats);
+
+  // updateStats();
 }
 
 async function updateStats() {
   const newStats = await StatService.calculateStats(allPlayers);
 
   for (const oldStat of stats) {
-    if (!newStats.find(newStat => newStat.id === oldStat.id)) {
+    if (!newStats.find((newStat) => newStat.id === oldStat.id)) {
       newStats.push(oldStat);
     }
   }
-  StatService.sortStats(newStats);
 
   stats = newStats;
+  activeStats = [];
+  inactiveStats = [];
   lastUpdated = new Date().getTime();
 
+  for (const stat of stats) {
+    if (moment().diff(moment.unix(stat.last_data.date_raw), 'days') <= inactiveThresholdDays) {
+      activeStats.push(stat);
+    } else {
+      inactiveStats.push(stat);
+    }
+  }
+
+  StatService.sortStats(activeStats);
+  StatService.sortStats(inactiveStats);
+
   stats.forEach(async (stat) => {
-    await db
-      .collection('stats')
-      .doc(stat.id)
-      .set(stat, { merge: true });
+    await db.collection('stats').doc(stat.id).set(stat, { merge: true });
   });
 
   console.log('Updated stats...');
